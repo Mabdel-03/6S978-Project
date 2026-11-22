@@ -1,0 +1,15 @@
+# Stage 3 teacher trajectories, RLM harness: root = Qwen3-32B, depth-1 child = the STUDENT checkpoint
+# (as in the RLM paper: strong root, student sub-calls), so child observations stay in-distribution.
+name: sft_teacher_rlm
+serve:
+  models: [qwen3-32b, bioreason-1.7b]
+  policy: teacher
+  log_messages: true
+  gpus: 2
+  placement: {qwen3-32b: {devices: "0,1", mem: 0.80}, bioreason-1.7b: {devices: "1", mem: 0.12}}
+dataset_root: harness-train
+datasets: [train]
+n_attempts: 4
+n_concurrent_trials: 28
+cells:
+  - {arm: rlm, model: qwen3-32b, kwargs: {child_model: bioreason-1.7b, max_generated_tokens: 120000}}

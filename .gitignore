@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+# generated / large artifacts live under the storage root (configs/paths.yaml), never in git
+/datasets/
+/jobs/
+/artifacts/
+*.sif
+*.parquet
+*.pt
+.env
+configs/secrets.yaml
+logs/
+results/

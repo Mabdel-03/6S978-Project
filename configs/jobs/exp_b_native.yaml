@@ -1,0 +1,18 @@
+# Stage 2 / Experiment B: native BioReason (Evo2 -> projection -> prompt_embeds), embeddings only.
+# Controls separating recursion from "one in-distribution call": direct_harness, coding_repl_tool, vote@k
+# (set vote.k so vote token spend ~= the rlm arm's mean spend measured in the pilot/dev pass).
+name: exp_b_native
+serve: {models: [bioreason-1.7b], policy: sampled}
+dataset_root: kegg-dx
+datasets: [native-wt, native-no_dna, native-scramble]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  - {arm: direct,           model: bioreason-1.7b}
+  - {arm: direct_harness,   model: bioreason-1.7b}
+  # k matched to compute on dev (2026-11-21): BioReason rlm native 11,496 generated tokens/trial vs
+  # 513 for one canonical direct call -> k ~= 22; odd k avoids ties. Realised spend is reported.
+  - {arm: vote,             model: bioreason-1.7b, kwargs: {k: 21}}
+  - {arm: coding_repl,      model: bioreason-1.7b}
+  - {arm: coding_repl_tool, model: bioreason-1.7b}
+  - {arm: rlm,              model: bioreason-1.7b}

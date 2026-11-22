@@ -1,0 +1,15 @@
+# Stage 3 teacher trajectories, CODING harness (sub-calls off). Root = Qwen3-32B.
+# log_messages: required by dnaharness.sft.export (per-turn SFT samples need the exact prompts).
+name: sft_teacher_coding
+serve:
+  models: [qwen3-32b, bioreason-1.7b]
+  policy: teacher
+  log_messages: true
+  gpus: 2
+  placement: {qwen3-32b: {devices: "0,1", mem: 0.80}, bioreason-1.7b: {devices: "1", mem: 0.12}}
+dataset_root: harness-train
+datasets: [train]
+n_attempts: 4
+n_concurrent_trials: 28
+cells:
+  - {arm: coding_repl, model: qwen3-32b, kwargs: {max_generated_tokens: 120000}}

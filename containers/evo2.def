@@ -1,0 +1,33 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:25.04-py3
+
+# Evo2-1B encoder image, used ONCE to precompute the embedding cache (dnaharness.serving.evo2_cache).
+# Build:  apptainer build --fakeroot $EVO2_SIF containers/evo2.def
+# Run:    apptainer exec --nv evo2.sif python -m dnaharness.serving.evo2_cache ...
+#
+# BioReason's DNA projection was trained on Evo2 run with Transformer Engine BLOCKED (vortex PyTorch
+# Linear fallback, FP8 input projections off); the cache builder installs BioReason's import hook and
+# BIOREASON_USE_VORTEX_PYTORCH_LINEAR=1 is set below, so TE in this base image is never used.
+
+%post
+    set -eu
+    # transformers pinned to the version the BioReason checkpoint was saved with (5.1.0); BioReason's
+    # Evo2Tokenizer subclasses transformers' PreTrainedTokenizer (bioreason.models imports it).
+    pip install --no-cache-dir "evo2==0.6.0" "transformers==5.1.0" pyyaml "huggingface_hub>=0.23" safetensors pandas pyarrow
+    # flash-attn (vortex imports flash_attn_2_cuda). Prefer the base image's build if present.
+    python -c "import flash_attn" 2>/dev/null || MAX_JOBS=8 pip install --no-build-isolation "flash-attn==2.8.0.post2"
+    # Remove the CUDA forward-compat driver (libcuda 575.51.02). The image puts it on LD_LIBRARY_PATH
+    # ahead of the host driver that `--nv` mounts; ORCD GPU nodes run a NEWER driver (590.x), and an
+    # older compat libcuda on a newer kernel module fails with CUDA error 803 (torch sees no GPU,
+    # Triton: "0 active drivers"). Without it, the host libcuda from /.singularity.d/libs is used.
+    # Triton finds libcuda via the (stale) ldconfig cache: run with TRITON_LIBCUDA_PATH=/.singularity.d/libs
+    # (slurm/evo2_cache.sbatch sets it).
+    rm -rf /usr/local/cuda/compat/lib /usr/local/cuda/compat/lib.real
+    # GPU-free checks only: importing vortex builds Triton autotuners, which need a live GPU driver
+    # (the build host has none). The real import happens at run time under --nv.
+    python -c "import importlib.util as u, sys; miss=[m for m in ('evo2','vortex','flash_attn','transformers','yaml') if u.find_spec(m) is None]; sys.exit(f'missing: {miss}') if miss else print('packages ok')"
+    python -c "import transformers.tokenization_utils, transformers.processing_utils, transformers; print('transformers', transformers.__version__)"
+
+%environment
+    export BIOREASON_USE_VORTEX_PYTORCH_LINEAR=1
+    export TORCHDYNAMO_DISABLE=1

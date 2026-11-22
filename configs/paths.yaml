@@ -1,0 +1,22 @@
+# All large artifacts live under `root` (NOT in the repo; /orcd/data/manoli is ~full and the user's
+# scratch quota is exhausted). Override any key with an env var: DNAH_<KEY_UPPER>, e.g. DNAH_ROOT.
+root: /orcd/data/lhtsai/001/mabdel03/6S978
+hf_home: ${root}/hf_cache
+envs: ${root}/envs
+sif_dir: ${root}/sif
+sandbox_sif: ${root}/sif/bio-sandbox.sif
+evo2_sif: ${root}/sif/evo2.sif
+evo2_cache: ${root}/evo2_cache          # {sha256(window)}.pt  bf16 [L, 1920]  (pre-projection)
+ckpts: ${root}/ckpts                    # patched / merged checkpoints
+datasets: ${root}/datasets              # generated Harbor task dirs
+manifest: ${root}/datasets/manifest.parquet
+jobs: ${root}/jobs                      # harbor jobs_dir
+gateway_logs: ${root}/logs/gateway
+secrets: ${root}/secrets.json           # handle HMAC secret + vLLM/gateway keys (chmod 600; created by `dnah secrets`)
+
+# Ports on the GPU node (gateway is the only endpoint sandboxes talk to).
+gateway_port: 8000
+vllm_ports:
+  qwen3-1.7b: 8001
+  bioreason-1.7b: 8002
+  extra: 8003

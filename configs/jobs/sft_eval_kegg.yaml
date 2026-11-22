@@ -1,0 +1,20 @@
+# Stage 3 evaluation (trimmed plan, user decision 2026-11-22), part 2/3: the KEGG cohort, raw and native,
+# intact vs text-only DNA. Instructions-only baselines are NOT re-run: they are the BioReason coding_repl /
+# rlm cells of exp_a_shared (raw) and exp_b_native (native), same prompts (v3), decoding and budgets.
+# Scramble dropped for harness cells (no wt-vs-scramble effect anywhere in Exp A/B).
+name: sft_eval_kegg
+serve: {models: [bioreason-1.7b, bioreason-1.7b-sft-coding, bioreason-1.7b-sft-rlm, bioreason-1.7b-sft-answer], policy: sampled}
+dataset_root: kegg-dx
+datasets: [raw-wt, raw-no_dna, native-wt, native-no_dna]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  - {arm: coding_repl, model: bioreason-1.7b, kwargs: {demos_file: "${root}/sft_data/bioreason-1.7b/demos_coding.txt"}}
+  - {arm: rlm,         model: bioreason-1.7b, kwargs: {demos_file: "${root}/sft_data/bioreason-1.7b/demos_rlm.txt"}}
+  - {arm: coding_repl, model: bioreason-1.7b-sft-coding}
+  - {arm: rlm,         model: bioreason-1.7b-sft-coding}
+  - {arm: coding_repl, model: bioreason-1.7b-sft-rlm}
+  - {arm: rlm,         model: bioreason-1.7b-sft-rlm}
+  - {arm: coding_repl, model: bioreason-1.7b-sft-answer}
+  - {arm: rlm,         model: bioreason-1.7b-sft-answer}
+  - {arm: rlm, model: bioreason-1.7b-sft-rlm, kwargs: {child_model: bioreason-1.7b}}

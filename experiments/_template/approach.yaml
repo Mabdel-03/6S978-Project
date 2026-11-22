@@ -1,0 +1,12 @@
+# Copy to experiments/<kind>/<approach>/approach.yaml and fill every field.
+# kind: harness_opt (new arm, base checkpoints), model_opt (new served name, locked arms),
+# or joint (both; compared as one joint change).
+# parent_model: qwen3-1.7b or bioreason-1.7b.
+# parent_arm: direct, coding_repl, or rlm.
+owner: ""
+kind: harness_opt
+parent_model: qwen3-1.7b
+parent_arm: direct
+claim:
+  task_accuracy: ""   # one line: accuracy on the locked eval sets
+  dna_use: ""         # one line: intact DNA versus no-DNA and scramble

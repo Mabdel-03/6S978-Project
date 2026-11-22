@@ -1,0 +1,71 @@
+# Checkpoint registry. `served_name` is the model name agents send to the LM gateway; the gateway
+# maps it to a vLLM backend + a renderer (chat template, optional native DNA interface).
+# HF revisions are pinned (fetched 2026-11-21).
+dataset:
+  repo: wanglab/kegg
+  revision: 9f0ef941a362f0e308e11861ed82c36338e23586
+
+evo2:
+  repo: arcinstitute/evo2_1b_base
+  revision: 2279e1df422c991037470302360edd40d0d2ea1e
+  model_name: evo2_1b_base
+  layer: blocks.20.mlp.l3
+  hidden_size: 1920
+  max_length_dna: 2048
+  # BioReason's projection was trained on Evo2 run WITHOUT Transformer Engine (vortex PyTorch
+  # Linear fallback, FP8 input projections disabled). The cache builder must reproduce that.
+  runtime_env:
+    BIOREASON_USE_VORTEX_PYTORCH_LINEAR: "1"
+    TORCHDYNAMO_DISABLE: "1"
+
+models:
+  qwen3-1.7b:
+    repo: Qwen/Qwen3-1.7B
+    revision: 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e
+    vllm_port_key: qwen3-1.7b
+    native_dna: false
+    template: hf            # the checkpoint's own chat template (official Qwen3)
+
+  bioreason-1.7b:
+    repo: mims-harvard/bio-posttrain-qwen3-1.7b-dna-sft
+    revision: 0fc8d19d6a0fc3046cc3aa7b75e3627c4e2f225f
+    vllm_port_key: bioreason-1.7b
+    # `dnah prepare-ckpt` writes a patched local copy (top-level rope_theta copied from
+    # rope_parameters; weights symlinked) -- vLLM would otherwise silently use rope_theta=10000.
+    patch_rope_theta: true
+    native_dna: true        # gateway can resolve DNA handles -> projected Evo2 prompt_embeds
+    template: bioreason     # BioReason CHAT_TEMPLATE (bio-posttrain chat_template_dl.py)
+    dna_projection: dna_projection.pt
+    dna_pad_id: 151670
+
+  # Stage-3 teacher (root model for trajectory generation).
+  qwen3-32b:
+    repo: Qwen/Qwen3-32B
+    revision: 9216db5781bf21249d130ec9da846c4624c16137
+    vllm_port_key: extra
+    native_dna: false
+    template: hf
+    tensor_parallel: 2
+
+# Shared decoding policy, ENFORCED by the gateway for every arm (agents cannot override it).
+decoding:
+  sampled:                 # main sweep (Qwen3 thinking-mode recommendation)
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+    max_tokens: 16384      # per call; thinking + content. Smoke (2026-11-21): 4096 truncated 4/5 direct
+                           # raw-DNA answers mid-thinking. The gateway also clamps to the context room
+                           # left, and the per-trial generated-token budget (48k) is unchanged.
+    enable_thinking: true
+  teacher:                 # Stage-3 trajectory generation (longer thinking budget per call)
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+    max_tokens: 8192
+    enable_thinking: true
+  greedy:                  # paper-reproduction track only (bio-mirage runner settings)
+    temperature: 0.0
+    top_p: 1.0
+    top_k: -1
+    max_tokens: 2048
+    enable_thinking: true

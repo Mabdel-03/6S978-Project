@@ -1,0 +1,15 @@
+# Harness-competence pilot (non-biological, auto-checkable). Also calibrates the shared budget.
+# Native pass-through check: pilot-native tasks verify that DNA handles reach child calls.
+name: pilot
+serve: {models: [qwen3-1.7b, bioreason-1.7b], policy: sampled, extra_meta_dirs: []}
+dataset_root: harness-pilot
+datasets: [pilot]
+n_attempts: 3
+n_concurrent_trials: 24
+cells:
+  - {arm: coding_repl, model: qwen3-1.7b}
+  - {arm: rlm,         model: qwen3-1.7b}
+  - {arm: mini_swe,    model: qwen3-1.7b}
+  - {arm: coding_repl, model: bioreason-1.7b}
+  - {arm: rlm,         model: bioreason-1.7b}
+  - {arm: mini_swe,    model: bioreason-1.7b}

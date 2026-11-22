@@ -1,0 +1,6 @@
+[submodule "third_party/bio-mirage"]
+	path = third_party/bio-mirage
+	url = https://github.com/mims-harvard/bio-mirage
+[submodule "third_party/bio-posttrain"]
+	path = third_party/bio-posttrain
+	url = https://github.com/mims-harvard/bio-posttrain

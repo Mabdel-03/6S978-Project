@@ -1,0 +1,9 @@
+# Sandbox isolation audit (HARD GATE). serve_and_run.sbatch aborts the allocation if it fails.
+name: audit
+serve: {models: [qwen3-1.7b], policy: sampled}
+dataset_root: audit
+datasets: [audit]
+n_attempts: 1
+n_concurrent_trials: 1
+cells:
+  - {arm: oracle}

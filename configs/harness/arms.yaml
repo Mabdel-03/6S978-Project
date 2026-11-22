@@ -1,0 +1,41 @@
+# Arm registry: experiment specs refer to arms by key; `dnaharness.jobs` expands each
+# (arm, model) cell into a Harbor agent entry. Shared budgets live in `defaults` so the
+# controlled arms differ ONLY in the listed keys.
+defaults:
+  max_generated_tokens: 48000     # per trial, root + child + tool, thinking included (gateway-enforced)
+  max_child_calls: 8
+  max_iterations: 12              # rlms root turns (rlm / coding_repl); mini-swe step_limit matches
+  agent_timeout_sec: 1700
+
+arms:
+  direct:                         # single call; canonical BioReason format when handles present, raw-inline otherwise
+    import_path: dnaharness.harbor_ext.agents:DirectAgent
+    kwargs: {variant: auto}
+  direct_harness:                 # Exp B control: harness system prompt + handles, one call
+    import_path: dnaharness.harbor_ext.agents:DirectAgent
+    kwargs: {variant: harness}
+  vote:                           # Exp B control: compute-matched majority vote (set k from RLM token spend)
+    import_path: dnaharness.harbor_ext.agents:VoteAgent
+    kwargs: {variant: auto, k: 5}
+  coding_repl:                    # controlled coding arm = same rlms loop, sub-calls removed + blocked
+    import_path: dnaharness.harbor_ext.agents:RlmAgent
+    kwargs: {arm: coding_repl}
+  coding_repl_tool:               # Exp B control: + non-recursive bioreason_answer() tool
+    import_path: dnaharness.harbor_ext.agents:RlmAgent
+    kwargs: {arm: coding_repl, bioreason_tool: true}
+  rlm:                            # official rlms RLM, depth-1 sub-calls to the same checkpoint
+    import_path: dnaharness.harbor_ext.agents:RlmAgent
+    kwargs: {arm: rlm}
+  mini_swe:                       # off-the-shelf Harbor built-in agent (runs inside the sandbox); the
+    # subclass only resolves the gateway endpoint at run time (per-allocation ports, resume)
+    name: mini-swe-agent
+    import_path: dnaharness.harbor_ext.agents:MiniSweGatewayAgent
+    kwargs:
+      skip_install: true          # pre-baked in bio-sandbox.sif (64 MB writable tmpfs!)
+      config_file: configs/harness/mini_swe_textbased.yaml
+  oracle:                         # plumbing check: writes the gold answer (solution/solve.sh) -> correct=1
+    name: oracle
+    builtin_plumbing: true
+  nop:                            # plumbing check: does nothing -> valid_output=0
+    name: nop
+    builtin_plumbing: true

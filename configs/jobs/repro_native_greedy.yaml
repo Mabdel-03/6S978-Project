@@ -1,0 +1,10 @@
+# Paper-reproduction track (kept separate from the sampled sweep): greedy native BioReason in its
+# exact training format. Target ~0.54 (wt) / ~0.62 (scramble) on the 165 rows (arXiv 2610.00898).
+name: repro_native_greedy
+serve: {models: [bioreason-1.7b], policy: greedy}
+dataset_root: kegg-dx
+datasets: [native-wt, native-scramble]
+n_attempts: 1
+n_concurrent_trials: 32
+cells:
+  - {arm: direct, model: bioreason-1.7b, kwargs: {variant: canonical, policy: greedy}}

@@ -1,0 +1,16 @@
+# Milestone 2 plumbing smoke test (5 raw-wt tasks): oracle -> correct=1, nop -> valid_output=0,
+# then one model through the gateway with the direct and rlm arms. Run the sandbox audit first
+# (scripts/audit_sandbox.sh); it is a hard gate.
+name: smoke
+serve: {models: [qwen3-1.7b], policy: sampled}
+dataset_root: kegg-dx-smoke
+datasets: [raw-wt]
+n_attempts: 1
+n_concurrent_trials: 4
+cells:
+  - {arm: oracle}
+  - {arm: nop}
+  - {arm: direct, model: qwen3-1.7b}
+  - {arm: rlm, model: qwen3-1.7b}
+  - {arm: coding_repl, model: qwen3-1.7b}
+  - {arm: mini_swe, model: qwen3-1.7b}

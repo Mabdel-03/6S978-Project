@@ -1,0 +1,19 @@
+# Copy to experiments/<kind>/<approach>/job.yaml and replace every <token>.
+# <kind> is harness_opt, model_opt, or joint. <approach> contains no "__".
+# <arm> is a key in configs/harness/arms.yaml (direct, coding_repl, rlm, or the arm this cell adds).
+# <model> is a served name: qwen3-1.7b, bioreason-1.7b, or the name this cell registers.
+# First run (this file): purpose dev, smoke the new cell on kegg-dx-dev
+# (or harness-pilot only to check that the cell runs).
+# Reported run: switch purpose to eval and point datasets at the locked eval sets
+# (kegg-dx/... and/or harness-pilot/pilot).
+# name: <kind>__<approach>__<arm>__<model>
+#   e.g. harness_opt__repl-budget__coding_repl__qwen3-1.7b
+name: "<kind>__<approach>__<arm>__<model>"
+purpose: dev
+serve: {models: ["<model>"], policy: sampled}
+dataset_root: kegg-dx-dev
+datasets: [raw-wt, native-wt]
+n_attempts: 1
+n_concurrent_trials: 24
+cells:
+  - {arm: "<arm>", model: "<model>"}

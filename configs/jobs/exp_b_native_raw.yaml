@@ -1,0 +1,11 @@
+# Stage 2 core channel condition: raw DNA + native embeddings together (separates raw-sequence use
+# from Evo2 use when compared against exp_a_shared raw-only and exp_b_native embeddings-only).
+name: exp_b_native_raw
+serve: {models: [bioreason-1.7b], policy: sampled}
+dataset_root: kegg-dx
+datasets: [native_raw-wt, native_raw-no_dna, native_raw-scramble]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  - {arm: coding_repl, model: bioreason-1.7b}
+  - {arm: rlm,         model: bioreason-1.7b}

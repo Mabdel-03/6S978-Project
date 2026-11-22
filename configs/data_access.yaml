@@ -1,0 +1,23 @@
+# Access classes for a job spec that sets `purpose`. This is the only permission list.
+# A spec may name only datasets in its class. Specs that omit `purpose` are not checked.
+#
+# The Hugging Face KEGG train/val/test split is BioReason history (126 of 165 cohort rows are train). orig_split is a reporting column in src/dnaharness/analysis/metrics.py, not permission to train.
+
+# 165-row cohort, every interface and condition, plus the competence pilot. Report-only.
+eval:
+  - kegg-dx
+  - harness-pilot
+
+# Prompt and harness debugging only.
+dev:
+  - kegg-dx-dev
+
+# The only biological text and DNA post-training may see.
+train:
+  - harness-train
+  - kegg-dx-train_pool
+
+# Smoke rows are cohort rows. Their accuracy is not a result.
+plumbing:
+  - audit
+  - kegg-dx-smoke

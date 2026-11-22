@@ -1,0 +1,17 @@
+# Stage 1 / Experiment A: shared, interpretable interface (raw DNA strings + deterministic tools)
+# 2 checkpoints x {direct, coding_repl, rlm} (+ mini_swe for Qwen only) x 165 x {wt, no_dna, scramble} x 3 seeds.
+# BioReason x mini_swe dropped after the pilot (2026-11-21): 5% valid outputs, never submits.
+name: exp_a_shared
+serve: {models: [qwen3-1.7b, bioreason-1.7b], policy: sampled}
+dataset_root: kegg-dx
+datasets: [raw-wt, raw-no_dna, raw-scramble]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  - {arm: direct,      model: qwen3-1.7b}
+  - {arm: coding_repl, model: qwen3-1.7b}
+  - {arm: rlm,         model: qwen3-1.7b}
+  - {arm: mini_swe,    model: qwen3-1.7b}
+  - {arm: direct,      model: bioreason-1.7b}
+  - {arm: coding_repl, model: bioreason-1.7b}
+  - {arm: rlm,         model: bioreason-1.7b}

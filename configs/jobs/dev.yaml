@@ -1,0 +1,15 @@
+# Equal-budget prompt development on 20 dev rows (no shared DNA pair / text with the cohort).
+# Allow <= 5 prompt revisions per checkpoint x harness, then freeze runtime/prompts.py (bump PROMPT_VERSION).
+name: dev
+serve: {models: [qwen3-1.7b, bioreason-1.7b], policy: sampled}
+dataset_root: kegg-dx-dev
+datasets: [raw-wt, native-wt]
+n_attempts: 1
+n_concurrent_trials: 24
+cells:
+  - {arm: direct,      model: qwen3-1.7b}
+  - {arm: coding_repl, model: qwen3-1.7b}
+  - {arm: rlm,         model: qwen3-1.7b}
+  - {arm: direct,      model: bioreason-1.7b}
+  - {arm: coding_repl, model: bioreason-1.7b}
+  - {arm: rlm,         model: bioreason-1.7b}

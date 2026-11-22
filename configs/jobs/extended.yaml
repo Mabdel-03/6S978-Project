@@ -1,0 +1,13 @@
+# Optional supporting perturbations (source preference / locus vs variant).
+name: extended
+serve: {models: [qwen3-1.7b, bioreason-1.7b], policy: sampled}
+dataset_root: kegg-dx
+datasets: [raw-revert_ref, raw-swap_pair, raw-text_conflict, native-revert_ref, native-swap_pair, native-text_conflict]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  - {arm: direct,      model: bioreason-1.7b}
+  - {arm: coding_repl, model: bioreason-1.7b}
+  - {arm: rlm,         model: bioreason-1.7b}
+  - {arm: coding_repl, model: qwen3-1.7b}
+  - {arm: rlm,         model: qwen3-1.7b}

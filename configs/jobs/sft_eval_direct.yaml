@@ -1,0 +1,12 @@
+# Stage 3 evaluation (trimmed plan, user decision 2026-11-22), part 3/3: is the native DNA pathway intact
+# after SFT? Canonical-format direct calls for each SFT checkpoint; the base checkpoint is exp_b_native/direct.
+name: sft_eval_direct
+serve: {models: [bioreason-1.7b-sft-coding, bioreason-1.7b-sft-rlm, bioreason-1.7b-sft-answer], policy: sampled}
+dataset_root: kegg-dx
+datasets: [native-wt, native-no_dna, native-scramble]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  - {arm: direct, model: bioreason-1.7b-sft-coding}
+  - {arm: direct, model: bioreason-1.7b-sft-rlm}
+  - {arm: direct, model: bioreason-1.7b-sft-answer}

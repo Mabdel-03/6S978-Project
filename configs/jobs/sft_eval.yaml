@@ -1,0 +1,33 @@
+# NOTE: the full matrix as originally planned. The trimmed evaluation actually run is sft_eval_{pilot,kegg,direct}.yaml.
+# Stage 3 evaluation: every adaptation condition x BOTH harnesses, on the competence pilot and the
+# raw + native core sets, plus native direct (detects damage to the DNA pathway), plus a root-only
+# diagnostic (SFT root, ORIGINAL child). Fill the demos paths after running dnaharness.sft.demos.
+name: sft_eval
+serve:
+  models: [bioreason-1.7b, bioreason-1.7b-sft-coding, bioreason-1.7b-sft-rlm, bioreason-1.7b-sft-answer]
+  policy: sampled
+datasets: [harness-pilot/pilot, kegg-dx/raw-wt, kegg-dx/raw-no_dna, kegg-dx/raw-scramble,
+           kegg-dx/native-wt, kegg-dx/native-no_dna, kegg-dx/native-scramble]
+n_attempts: 3
+n_concurrent_trials: 28
+cells:
+  # 1. instructions only (baseline; also available from exp_a/exp_b)
+  - {arm: coding_repl, model: bioreason-1.7b}
+  - {arm: rlm,         model: bioreason-1.7b}
+  # 2. instructions + k=3 in-context demonstrations
+  - {arm: coding_repl, model: bioreason-1.7b, kwargs: {demos_file: "${root}/sft_data/bioreason-1.7b/demos_coding.txt"}}
+  - {arm: rlm,         model: bioreason-1.7b, kwargs: {demos_file: "${root}/sft_data/bioreason-1.7b/demos_rlm.txt"}}
+  # 3-5. SFT conditions, each under BOTH harnesses
+  - {arm: coding_repl, model: bioreason-1.7b-sft-coding}
+  - {arm: rlm,         model: bioreason-1.7b-sft-coding}
+  - {arm: coding_repl, model: bioreason-1.7b-sft-rlm}
+  - {arm: rlm,         model: bioreason-1.7b-sft-rlm}
+  - {arm: coding_repl, model: bioreason-1.7b-sft-answer}
+  - {arm: rlm,         model: bioreason-1.7b-sft-answer}
+  # root-only diagnostic: SFT root orchestrating the ORIGINAL child
+  - {arm: rlm, model: bioreason-1.7b-sft-rlm, kwargs: {child_model: bioreason-1.7b}}
+  # native direct per checkpoint (DNA pathway intact after SFT?)
+  - {arm: direct, model: bioreason-1.7b}
+  - {arm: direct, model: bioreason-1.7b-sft-coding}
+  - {arm: direct, model: bioreason-1.7b-sft-rlm}
+  - {arm: direct, model: bioreason-1.7b-sft-answer}
